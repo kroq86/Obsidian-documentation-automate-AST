@@ -1,6 +1,6 @@
 # documentation-automate-AST
 Reads through all .py files in a given directory and its subdirectories, parses the AST (Abstract Syntax Tree) of each file to identify classes, methods, and attributes, builds a directed graph with classes as nodes and methods/attributes as edges, and generates Markdown files for each class with links to its methods and attributes.
-Obsidian graph](https://github.com/kroq86/documentation-automate-AST/blob/main/image.png)
+[Obsidian graph](https://github.com/kroq86/documentation-automate-AST/blob/main/image.png)
 
 Generating documentation for Python code can be a time-consuming and error-prone process. Fortunately, there are tools available that can automate this task, such as the Python code mentioned above that reads through all .py files in a given directory and generates documentation for the code.
 
