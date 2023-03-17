@@ -40,30 +40,19 @@ class ClassFinder:
 class GraphBuilder:
     def build_graph(self, classes):
         graph = nx.DiGraph()
-
-        for class_name in classes:
-            graph.add_node(class_name)
-
+        [graph.add_node(class_name) for class_name in classes]
         for class_name, data in classes.items():
-            for method_name in data["methods"]:
-                graph.add_edge(class_name, method_name)
-
-            for attribute_name in data["attributes"]:
-                graph.add_edge(class_name, attribute_name)
+            [graph.add_edge(class_name, method_name) for method_name in data["methods"]]
+            [graph.add_edge(class_name, attribute_name) for attribute_name in data["attributes"]]
 
         return graph
-
 
 class MarkdownGenerator:
     def __init__(self, root_path):
         self.root_path = root_path
 
     def generate_md_files(self, classes, graph):
-        class_map = {}
-        for class_name in classes:
-            md_file_path = os.path.join(self.root_path, "MD", f"{class_name}.md")
-            class_map[class_name] = md_file_path
-
+        class_map = {class_name: os.path.join(self.root_path, "MD", f"{class_name}.md") for class_name in classes}
         os.makedirs(os.path.join(self.root_path, "MD"), exist_ok=True)
 
         for class_name, data in classes.items():
@@ -73,12 +62,11 @@ class MarkdownGenerator:
                 md_file.write(f"Called by: [[Main]](main.md)\n\n")
 
                 if class_name in graph:
-                    neighbors = list(graph[class_name])
+                    neighbors = [neighbor for neighbor in graph[class_name] if neighbor in class_map]
                     for neighbor in neighbors:
-                        if neighbor in class_map:
-                            md_file.write(f"- [[{neighbor}]]({os.path.relpath(class_map[neighbor], os.path.dirname(md_file_path))})\n")
-                        else:
-                            md_file.write(f"- {neighbor}\n")
+                        md_file.write(f"- [[{neighbor}]]({os.path.relpath(class_map[neighbor], os.path.dirname(md_file_path))})\n")
+                    for neighbor in set(graph[class_name]) - set(neighbors):
+                        md_file.write(f"- {neighbor}\n")
                 md_file.write("\n")
 
                 if "attributes" in data:
@@ -92,6 +80,7 @@ class MarkdownGenerator:
                     for method_name in data["methods"]:
                         md_file.write(f"- [{method_name}]({method_name}.md)\n")
                     md_file.write("\n")
+
 
 
 class DocumentationGenerator:
