@@ -11,7 +11,7 @@ class ClassFinder:
         classes = {}
         for root, dirs, files in os.walk(self.path):
             for file in files:
-                if file.endswith(".py") and "notes-main" in root:
+                if file.endswith(".py") and pathToFolder in root:
                     with open(os.path.join(root, file), "r") as source:
                         try:
                             tree = ast.parse(source.read())
@@ -107,6 +107,6 @@ class DocumentationGenerator:
         self.markdown_generator.generate_md_files(classes, graph)
 
 # put here path to folder
-generator = DocumentationGenerator("pathToFolder")
+pathToFolder = "notes-main"
+generator = DocumentationGenerator(pathToFolder)
 generator.generate()
-
