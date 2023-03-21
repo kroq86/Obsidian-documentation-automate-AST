@@ -1,7 +1,8 @@
 import os
 import ast
 import networkx as nx
-
+import cProfile
+import pstats
 
 class ClassFinder:
     def __init__(self, path):
@@ -55,6 +56,10 @@ class MarkdownGenerator:
         class_map = {class_name: os.path.join(self.root_path, "MD", f"{class_name}.md") for class_name in classes}
         os.makedirs(os.path.join(self.root_path, "MD"), exist_ok=True)
 
+        # Profile the generation of Markdown files
+        profiler = cProfile.Profile()
+        profiler.enable()
+
         for class_name, data in classes.items():
             md_file_path = class_map[class_name]
             with open(md_file_path, "w") as md_file:
@@ -81,6 +86,19 @@ class MarkdownGenerator:
                         md_file.write(f"- [{method_name}]({method_name}.md)\n")
                     md_file.write("\n")
 
+            # Append profiling information to the Markdown file
+            stats_file = f"{class_name}_profile.txt"
+            with open(stats_file, "w") as stats:
+                p = pstats.Stats(profiler, stream=stats)
+                p.strip_dirs()
+                p.sort_stats("cumtime")
+                p.print_stats()
+            with open(md_file_path, "a") as md_file:
+                md_file.write(f"\n## Profiling Information\n\n```txt\n{open(stats_file).read()}\n```\n")
+
+        profiler.disable()
+
+
 
 
 class DocumentationGenerator:
@@ -91,8 +109,27 @@ class DocumentationGenerator:
         self.markdown_generator = MarkdownGenerator(self.root_path)
 
     def generate(self):
+        # Profile the find_classes method
+        pr = cProfile.Profile()
+        pr.enable()
         classes = self.class_finder.find_classes()
+        pr.disable()
+        # Save the profiling results to a file
+        with open('find_classes_profile.txt', 'w') as f:
+            ps = pstats.Stats(pr, stream=f).sort_stats('tottime')
+            ps.print_stats()
+
+        # Profile the build_graph method
+        pr = cProfile.Profile()
+        pr.enable()
         graph = self.graph_builder.build_graph(classes)
+        pr.disable()
+        # Save the profiling results to a file
+        with open('build_graph_profile.txt', 'w') as f:
+            ps = pstats.Stats(pr, stream=f).sort_stats('tottime')
+            ps.print_stats()
+
+        # Generate the markdown files
         self.markdown_generator.generate_md_files(classes, graph)
 
 # put here path to folder
