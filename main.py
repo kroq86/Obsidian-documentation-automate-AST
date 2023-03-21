@@ -55,8 +55,6 @@ class MarkdownGenerator:
     def generate_md_files(self, classes, graph):
         class_map = {class_name: os.path.join(self.root_path, "MD", f"{class_name}.md") for class_name in classes}
         os.makedirs(os.path.join(self.root_path, "MD"), exist_ok=True)
-
-        # Profile the generation of Markdown files
         profiler = cProfile.Profile()
         profiler.enable()
 
@@ -109,7 +107,6 @@ class DocumentationGenerator:
         self.markdown_generator = MarkdownGenerator(self.root_path)
 
     def generate(self):
-        # Profile the find_classes method
         pr = cProfile.Profile()
         pr.enable()
         classes = self.class_finder.find_classes()
@@ -119,7 +116,6 @@ class DocumentationGenerator:
             ps = pstats.Stats(pr, stream=f).sort_stats('tottime')
             ps.print_stats()
 
-        # Profile the build_graph method
         pr = cProfile.Profile()
         pr.enable()
         graph = self.graph_builder.build_graph(classes)
@@ -129,7 +125,6 @@ class DocumentationGenerator:
             ps = pstats.Stats(pr, stream=f).sort_stats('tottime')
             ps.print_stats()
 
-        # Generate the markdown files
         self.markdown_generator.generate_md_files(classes, graph)
 
 # put here path to folder
