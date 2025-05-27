@@ -319,7 +319,7 @@ class CodeArchitectureAnalyzer:
             for pattern, decorators in similar_decorators.items():
                 self.insights.append(ArchitecturalInsight(
                     type='recommendation',
-                    title=f'Multiple Similar Decorator Implementations: {pattern}',
+                                        title=f'Multiple Similar Decorator Implementations: {pattern}',
                     description=f'Found {len(decorators)} similar decorators ({", ".join(decorators)}). '
                                f'Consider consolidating for consistency.',
                     files_affected=[],
