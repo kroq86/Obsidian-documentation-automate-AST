@@ -266,6 +266,21 @@ class CodeArchitectureAnalyzer:
             return self._get_name(node.func)
         return ""
     
+    def _find_similar_decorators(self) -> Dict[str, List[str]]:
+        """Find groups of similar decorators that might need consolidation."""
+        decorator_names = list(self.decorators.keys())
+        
+        # Common patterns to look for
+        common_patterns = ['Export', 'Cache', 'Auth', 'Validate', 'Log', 'Test', 'Mock', 'Retry']
+        
+        patterns = {}
+        for pattern in common_patterns:
+            matching = [d for d in decorator_names if pattern in d]
+            if len(matching) > 1:
+                patterns[pattern] = matching
+        
+        return patterns
+    
     def _generate_insights(self):
         """Generate architectural insights and recommendations."""
         # High complexity functions
@@ -293,21 +308,23 @@ class CodeArchitectureAnalyzer:
             self.insights.append(ArchitecturalInsight(
                 type='info',
                 title='Decorator Patterns Found',
-                description=f'Found {len(decorator_usage)} decorators used across multiple functions. This indicates good architectural patterns.',
+                description=f'Found {len(decorator_usage)} decorators used across multiple functions.',
                 files_affected=[],
                 severity='low'
             ))
         
-        # Potential architectural issues
-        checksum_decorators = [d for d in self.decorators.keys() if 'Checksum' in d]
-        if len(checksum_decorators) > 1:
-            self.insights.append(ArchitecturalInsight(
-                type='recommendation',
-                title='Multiple Checksum Decorator Implementations',
-                description='Found multiple checksum decorator implementations. Consider consolidating for consistency.',
-                files_affected=[],
-                severity='medium'
-            ))
+        # Potential architectural issues - similar decorator patterns
+        similar_decorators = self._find_similar_decorators()
+        if similar_decorators:
+            for pattern, decorators in similar_decorators.items():
+                self.insights.append(ArchitecturalInsight(
+                    type='recommendation',
+                    title=f'Multiple Similar Decorator Implementations: {pattern}',
+                    description=f'Found {len(decorators)} similar decorators ({", ".join(decorators)}). '
+                               f'Consider consolidating for consistency.',
+                    files_affected=[],
+                    severity='medium'
+                ))
 
 
 class ReportGenerator:
@@ -472,7 +489,7 @@ def main():
         ReportGenerator.generate_cursor_integration(analysis_data, cursor_file)
         print(f"📱 Cursor integration file: {cursor_file}")
     
-    print(f"📝 Reports generated:")
+    print("📝 Reports generated:")
     print(f"  - Markdown: {md_file}")
     print(f"  - JSON: {json_file}")
     
