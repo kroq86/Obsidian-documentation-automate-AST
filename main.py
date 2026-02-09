@@ -460,6 +460,11 @@ def main():
         action='store_true', 
         help='Open report in browser'
     )
+    parser.add_argument(
+        '--treemap',
+        action='store_true',
+        help='Generate treemap metrics in Prometheus format (compatible with viewer.html)'
+    )
     
     args = parser.parse_args()
     
@@ -492,6 +497,27 @@ def main():
     print("📝 Reports generated:")
     print(f"  - Markdown: {md_file}")
     print(f"  - JSON: {json_file}")
+    
+    # Generate treemap metrics if requested
+    if args.treemap:
+        try:
+            from core import analyze_project, write_metrics
+            
+            print("\n🌳 Generating treemap metrics...")
+            treemap_metrics = analyze_project(
+                project_path=args.path,
+                include_patterns=args.dirs,
+                exclude_patterns=args.exclude
+            )
+            
+            treemap_file = f"{args.output}_treemap.prom"
+            treemap_path = write_metrics(treemap_metrics, treemap_file)
+            print(f"  - Treemap metrics: {treemap_path}")
+            print(f"  - Open viewer.html and load {treemap_file} to visualize")
+        except ImportError as e:
+            print(f"⚠️  Could not generate treemap metrics: {e}")
+        except Exception as e:
+            print(f"❌ Error generating treemap metrics: {e}")
     
     if args.open:
         webbrowser.open(f"file://{os.path.abspath(md_file)}")
